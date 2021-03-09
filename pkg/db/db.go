@@ -1,6 +1,7 @@
 package db
 
 import (
+	"context"
 	"github.com/go-redis/redis/v8"
 	"goChatDemo/pkg/logger"
 	"gorm.io/driver/mysql"
@@ -10,8 +11,9 @@ import (
 
 var DB *gorm.DB
 var RedisClient *redis.Client
+var Ctx context.Context
 
-func InitMysql(dbUrl string) {
+func InitDB(dbUrl string) {
 	logger.Logger.Info("init DB begin")
 	var err error
 	DB, err = gorm.Open(mysql.Open(dbUrl), &gorm.Config{
@@ -24,4 +26,20 @@ func InitMysql(dbUrl string) {
 		return
 	}
 	logger.Logger.Info("init DB success")
+}
+
+func InitRedisClient(addr, password string) {
+	logger.Logger.Info("init redis begin")
+	Ctx = context.Background()
+	RedisClient = redis.NewClient(&redis.Options{
+		Addr:     addr,
+		Password: password,
+		DB:       0,
+	})
+	_, err := RedisClient.Ping(Ctx).Result()
+	if err != nil {
+		logger.Logger.Error(err)
+		panic(err)
+	}
+	logger.Logger.Info("init redis success")
 }
