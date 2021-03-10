@@ -4,6 +4,7 @@ import (
 	"goChatDemo/config"
 	"goChatDemo/pkg/db"
 	"goChatDemo/pkg/logger"
+	"goChatDemo/pkg/rpc"
 )
 
 func main() {
@@ -21,6 +22,8 @@ func main() {
 		panic(err)
 	}
 	logger.Logger.Info("val:", val)
+
+	rpc.InitRpc()
 
 	//新增
 	//userId, _ := dao.UserDao.Add(&dao.User{
