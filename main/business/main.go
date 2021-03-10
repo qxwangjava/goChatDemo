@@ -24,7 +24,7 @@ func main() {
 	logger.Logger.Info("val:", val)
 
 	rpc.InitRpc()
-
+	select {}
 	//新增
 	//userId, _ := dao.UserDao.Add(&dao.User{
 	//	UserName:  "wangqx1",
