@@ -19,8 +19,8 @@ func InitRpc() {
 		s := grpc.NewServer()
 
 		// 注册HelloService
-		pb.RegisterHelloServer(s, service.UserService)
-
+		pb.RegisterHelloServer(s, service.HelloService)
+		pb.RegisterUserServiceServer(s, service.UserService)
 		logger.Logger.Info("Listen on " + RpcAddr)
 		s.Serve(listen)
 	}()

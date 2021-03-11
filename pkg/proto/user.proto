@@ -1,0 +1,84 @@
+syntax = "proto3";
+import public "google/protobuf/timestamp.proto";
+
+
+package pb;
+
+option go_package = "pb";
+
+service userService {
+  // 添加用户
+  rpc addUser(AddUserDto) returns (UserId){}
+
+  // 通过Id删除用户
+  rpc deleteUserById(UserId) returns (NullMessage){}
+
+  // 通过id获取用户信息
+  rpc getUserById(UserId) returns (QueryUserDto){}
+
+  // 通过手机号精确查询用户
+  rpc getUserByMobile(UserMobile) returns(QueryUserDto){}
+
+  // 更新用户信息
+  rpc updateUser(AddUserDto) returns (NullMessage){}
+}
+
+message NullMessage {
+
+}
+
+//message UserList{
+//  repeated User userList = 1;
+//}
+
+message AddUserDto {
+  // 生日
+  google.protobuf.Timestamp birthday = 1;
+  // 邮箱
+  string email = 2;
+  // 扩展字段
+  string ex = 3;
+  // 头像地址
+  string headImg = 4;
+  // 手机号
+  string mobile = 5;
+  // 昵称
+  string nickName = 6;
+  // 性别
+  int32 sex = 7;
+  // 用户名
+  string userName = 8;
+}
+
+message QueryUserDto {
+  // 生日
+  google.protobuf.Timestamp birthday = 1;
+  // 邮箱
+  string email = 2;
+  // 扩展字段
+  string ex = 3;
+  // 头像地址
+  string headImg = 4;
+  // 手机号
+  string mobile = 5;
+  // 昵称
+  string nickName = 6;
+  // 性别
+  int32 sex = 7;
+  // 用户名
+  string userName = 8;
+
+  google.protobuf.Timestamp createAt = 9;
+
+  google.protobuf.Timestamp updateAt = 10;
+
+  int64 userId = 11;
+}
+
+message UserId {
+  int64 userId = 1;
+}
+
+message UserMobile {
+  string mobile = 1;
+}

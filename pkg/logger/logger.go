@@ -21,8 +21,8 @@ func init() {
 	fileFmt := getFormatter(false)
 	Logger.SetFormatter(consoleFmt)
 	Logger.SetReportCaller(true)
-	infoWriter := getWriter("./log/im_info.log")
-	errorWriter := getWriter("./log/im_error.log")
+	infoWriter := getWriter("/data/log/goChatDemo/im_info.log")
+	errorWriter := getWriter("/data/log/goChatDemo/im_error.log")
 	Logger.AddHook(lfshook.NewHook(
 		lfshook.WriterMap{
 			logrus.InfoLevel:  infoWriter,

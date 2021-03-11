@@ -9,23 +9,23 @@ const (
 
 //成功结果
 var SUCCESS = Result{
-	success: true,
-	code:    CODE_SUCCESS,
-	message: CODE_SUCCESS_MESSAGE,
-	data:    nil,
+	Success: true,
+	Code:    CODE_SUCCESS,
+	Message: CODE_SUCCESS_MESSAGE,
+	Data:    nil,
 }
 
 //失败结果
 var ERROR = Result{
-	success: true,
-	code:    CODE_FAIL,
-	message: CODE_FAIL_MESSAGE,
-	data:    nil,
+	Success: true,
+	Code:    CODE_FAIL,
+	Message: CODE_FAIL_MESSAGE,
+	Data:    nil,
 }
 
 type Result struct {
-	success bool
-	code    string
-	message string
-	data    interface{}
+	Success bool
+	Code    string
+	Message string
+	Data    interface{}
 }
