@@ -1,4 +1,4 @@
-package main
+package test
 
 import (
 	"context"
@@ -6,9 +6,10 @@ import (
 	"goChatDemo/pkg/pb"
 	"goChatDemo/pkg/rpc"
 	"google.golang.org/grpc"
+	"testing"
 )
 
-func main() {
+func TestRpc(t *testing.T) {
 	conn, err := grpc.Dial(rpc.RpcAddr, grpc.WithInsecure())
 	if err != nil {
 		logger.Logger.Error(err)

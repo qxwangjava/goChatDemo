@@ -1,30 +1,19 @@
 package dao
 
 import (
+	"goChatDemo/internal/business/model"
 	"goChatDemo/pkg/db"
 	"goChatDemo/pkg/logger"
 	"strconv"
-	"time"
 )
 
 type userDao struct {
 }
 
-// 用户Demo表
-type User struct {
-	CreatedAt time.Time `gorm:"created_at"` // 创建时间
-	Id        int64     `gorm:"id"`         // 主键
-	IsDeleted int32     `gorm:"is_deleted"` // 是否删除 1:是  -1:否
-	Mobile    string    `gorm:"mobile"`     // 手机号
-	NickName  string    `gorm:"nick_name"`  // 昵称
-	UpdatedAt time.Time `gorm:"updated_at"` // 更新时间
-	UserName  string    `gorm:"user_name"`  // 用户名
-
-}
-
 var UserDao = new(userDao)
 
-func (ud userDao) Add(user *User) (int64, error) {
+// 添加用户
+func (ud userDao) Add(user *model.User) (int64, error) {
 	err := db.DB.Create(user).Error
 	if err != nil {
 		logger.Logger.Error(err)
@@ -33,8 +22,9 @@ func (ud userDao) Add(user *User) (int64, error) {
 	return user.Id, nil
 }
 
+//根据Id删除
 func (ud userDao) Del(userId int64) {
-	user := User{
+	user := model.User{
 		Id: userId,
 	}
 	err := db.DB.Delete(&user).Error
@@ -44,7 +34,8 @@ func (ud userDao) Del(userId int64) {
 	}
 }
 
-func (ud userDao) DelByCondition(user *User) {
+// 根据条件删除
+func (ud userDao) DelByCondition(user *model.User) {
 	whereCondition := " 1 = 1 "
 	if user.IsDeleted != 0 {
 		whereCondition += " and is_deleted = " + strconv.Itoa(int(user.IsDeleted))
@@ -63,4 +54,11 @@ func (ud userDao) DelByCondition(user *User) {
 		logger.Logger.Error(err)
 		panic(err)
 	}
+}
+
+// 根据手机号查询
+func (ud userDao) GetUserByMobile(mobile string) *[]model.User {
+	var users []model.User
+	db.DB.Where("mobile = ?", mobile).Find(&users)
+	return &users
 }

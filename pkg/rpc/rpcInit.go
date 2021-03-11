@@ -1,9 +1,9 @@
 package rpc
 
 import (
+	"goChatDemo/internal/business/service"
 	"goChatDemo/pkg/logger"
 	"goChatDemo/pkg/pb"
-	"goChatDemo/pkg/rpc/server"
 	"google.golang.org/grpc"
 	"net"
 )
@@ -19,7 +19,7 @@ func InitRpc() {
 		s := grpc.NewServer()
 
 		// 注册HelloService
-		pb.RegisterHelloServer(s, server.UserService)
+		pb.RegisterHelloServer(s, service.UserService)
 
 		logger.Logger.Info("Listen on " + RpcAddr)
 		s.Serve(listen)
