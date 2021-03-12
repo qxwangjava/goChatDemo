@@ -4,6 +4,7 @@ import (
 	"goChatDemo/config"
 	"goChatDemo/pkg/db"
 	"goChatDemo/pkg/rpc"
+	"goChatDemo/pkg/web"
 )
 
 func main() {
@@ -12,6 +13,10 @@ func main() {
 	db.InitRedisClient(config.DbConfig.RedisUrl, "")
 
 	rpc.InitRpc()
+
+	rpc.InitUserServiceClient()
+
+	web.InitWeb()
 	select {}
 
 }

@@ -8,6 +8,19 @@ import (
 	"net"
 )
 
+var (
+	UserServiceClient pb.UserServiceClient
+)
+
+func InitUserServiceClient() {
+	conn, err := grpc.Dial(RpcAddr, grpc.WithInsecure())
+	if err != nil {
+		logger.Logger.Error(err)
+		panic(err)
+	}
+	UserServiceClient = pb.NewUserServiceClient(conn)
+}
+
 func InitRpc() {
 	go func() {
 		listen, err := net.Listen("tcp", RpcAddr)

@@ -1,4 +1,4 @@
-package web
+package rpc
 
 const (
 	CODE_SUCCESS         string = "0"
@@ -28,4 +28,13 @@ type Result struct {
 	Code    string
 	Message string
 	Data    interface{}
+}
+
+func Success(data interface{}) Result {
+	return Result{
+		Success: true,
+		Code:    CODE_SUCCESS,
+		Message: CODE_SUCCESS_MESSAGE,
+		Data:    data,
+	}
 }
