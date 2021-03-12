@@ -30,24 +30,22 @@ type addUserVo struct {
 	UserName string `json:"userName,omitempty"`
 }
 
-var AddUser = func(c *gin.Context) {
-	r := gin.Default()
-	r.POST("/user/add")
+var AddUser = func(c *gin.Context) error {
 	au := addUserVo{}
 	err := c.ShouldBindJSON(&au)
 	if err != nil {
-		logger.Logger.Error(err)
-		panic(err)
+		logger.Logger.Error(err.Error())
+		return err
 	}
 	birthday, err := time.Parse("2006-01-02 15:04:05", au.Birthday)
 	if err != nil {
-		logger.Logger.Error(err)
-		panic(err)
+		logger.Logger.Error(err.Error())
+		return err
 	}
 	b, err := ptypes.TimestampProto(birthday)
 	if err != nil {
-		logger.Logger.Error(err)
-		panic(err)
+		logger.Logger.Error(err.Error())
+		return err
 	}
 	addUserDto := &pb.AddUserDto{
 		Birthday: b,
@@ -61,8 +59,9 @@ var AddUser = func(c *gin.Context) {
 	}
 	userId, err := rpc.UserServiceClient.AddUser(context.Background(), addUserDto)
 	if err != nil {
-		logger.Logger.Error(err)
-		panic(err)
+		logger.Logger.Error(err.Error())
+		return err
 	}
-	c.JSON(http.StatusOK, rpc.Success(userId))
+	c.JSON(http.StatusOK, userId)
+	return nil
 }
