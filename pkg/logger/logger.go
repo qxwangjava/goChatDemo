@@ -15,22 +15,46 @@ import (
 
 var Logger *logrus.Logger
 
+type ErrHook struct {
+}
+
+// Levels 只定义 error 和 panic 等级的日志,其他日志等级不会触发 hook
+func (h *ErrHook) Levels() []logrus.Level {
+	return []logrus.Level{
+		logrus.ErrorLevel,
+		logrus.PanicLevel,
+	}
+}
+
+// Fire 将异常栈打印出来
+func (h *ErrHook) Fire(entry *logrus.Entry) error {
+	var errStack = StackTrace(false)
+	entry.Message = errStack
+	return nil
+}
+
 func init() {
 	Logger = logrus.New()
 	consoleFmt := getFormatter(true)
 	fileFmt := getFormatter(false)
 	Logger.SetFormatter(consoleFmt)
 	Logger.SetReportCaller(true)
+	Logger.SetLevel(logrus.DebugLevel)
 	infoWriter := getWriter("/data/log/goChatDemo/im_info.log")
 	errorWriter := getWriter("/data/log/goChatDemo/im_error.log")
+	// Logger.AddHook(&ErrHook{})
 	Logger.AddHook(lfshook.NewHook(
 		lfshook.WriterMap{
 			logrus.InfoLevel:  infoWriter,
+			logrus.DebugLevel: infoWriter,
 			logrus.ErrorLevel: errorWriter,
 		},
 		fileFmt,
 	))
 
+	// gin log配置
+	//gin.DefaultWriter = infoWriter
+	//gin.DefaultErrorWriter = errorWriter
 }
 
 func getFormatter(isConsole bool) *formatter.Formatter {
@@ -69,4 +93,21 @@ func getWriter(filename string) io.Writer {
 		panic(err)
 	}
 	return hook
+}
+
+func StackTrace(all bool) string {
+
+	// Reserve 10K buffer at first
+	buf := make([]byte, 10240)
+	for {
+		size := runtime.Stack(buf, all)
+		// The size of the buffer may be not enough to hold the stacktrace,
+		// so double the buffer size
+		if size == len(buf) {
+			buf = make([]byte, len(buf)<<1)
+			continue
+		}
+		break
+	}
+	return string(buf)
 }

@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	"github.com/go-redis/redis/v8"
+	gorm_logrus "github.com/ttjio/gorm-logrus"
 	"goChatDemo/pkg/logger"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -20,6 +21,7 @@ func InitDB(dbUrl string) {
 		NamingStrategy: schema.NamingStrategy{
 			SingularTable: true, // 使用单数表名，启用该选项，此时，`User` 的表名应该是 `t_user`
 		},
+		Logger: gorm_logrus.New(logger.Logger),
 	})
 	if err != nil {
 		logger.Logger.Error("数据库连接失败")

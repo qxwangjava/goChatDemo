@@ -18,8 +18,10 @@ require (
 	github.com/lestrrat-go/strftime v1.0.4 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.1 // indirect
+	github.com/pkg/errors v0.9.1 // indirect
 	github.com/rifflock/lfshook v0.0.0-20180920164130-b9218ef580f5
 	github.com/sirupsen/logrus v1.8.0
+	github.com/ttjio/gorm-logrus v0.0.0-20210225060551-08ebef35e184 // indirect
 	github.com/ugorji/go v1.2.4 // indirect
 	go.uber.org/zap v1.16.0
 	golang.org/x/crypto v0.0.0-20210220033148-5ea612d1eb83 // indirect

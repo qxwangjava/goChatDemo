@@ -4,7 +4,7 @@ import (
 	"context"
 	"github.com/gin-gonic/gin"
 	"github.com/golang/protobuf/ptypes"
-	"goChatDemo/pkg/logger"
+	"github.com/pkg/errors"
 	"goChatDemo/pkg/pb"
 	"goChatDemo/pkg/rpc"
 	"net/http"
@@ -34,18 +34,15 @@ var AddUser = func(c *gin.Context) error {
 	au := addUserVo{}
 	err := c.ShouldBindJSON(&au)
 	if err != nil {
-		logger.Logger.Error(err.Error())
-		return err
+		return errors.Wrap(err, "")
 	}
 	birthday, err := time.Parse("2006-01-02 15:04:05", au.Birthday)
 	if err != nil {
-		logger.Logger.Error(err.Error())
-		return err
+		return errors.Wrap(err, "")
 	}
 	b, err := ptypes.TimestampProto(birthday)
 	if err != nil {
-		logger.Logger.Error(err.Error())
-		return err
+		return errors.Wrap(err, "")
 	}
 	addUserDto := &pb.AddUserDto{
 		Birthday: b,
@@ -59,8 +56,7 @@ var AddUser = func(c *gin.Context) error {
 	}
 	userId, err := rpc.UserServiceClient.AddUser(context.Background(), addUserDto)
 	if err != nil {
-		logger.Logger.Error(err.Error())
-		return err
+		return errors.Wrap(err, "")
 	}
 	c.JSON(http.StatusOK, userId)
 	return nil
