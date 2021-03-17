@@ -3,6 +3,7 @@ package logger
 import (
 	"fmt"
 	formatter "github.com/antonfisher/nested-logrus-formatter"
+	"github.com/gin-gonic/gin"
 	rotatelogs "github.com/lestrrat-go/file-rotatelogs"
 	"github.com/rifflock/lfshook"
 	"github.com/sirupsen/logrus"
@@ -17,6 +18,11 @@ var Logger *logrus.Logger
 
 type ErrHook struct {
 }
+
+const (
+	infoFileName  = "/data/log/goChatDemo/im_info.log"
+	errorFileName = "/data/log/goChatDemo/im_error.log"
+)
 
 // Levels 只定义 error 和 panic 等级的日志,其他日志等级不会触发 hook
 func (h *ErrHook) Levels() []logrus.Level {
@@ -40,9 +46,8 @@ func init() {
 	Logger.SetFormatter(consoleFmt)
 	Logger.SetReportCaller(true)
 	Logger.SetLevel(logrus.DebugLevel)
-	infoWriter := getWriter("/data/log/goChatDemo/im_info.log")
-	errorWriter := getWriter("/data/log/goChatDemo/im_error.log")
-	// Logger.AddHook(&ErrHook{})
+	infoWriter := getWriter(infoFileName)
+	errorWriter := getWriter(errorFileName)
 	Logger.AddHook(lfshook.NewHook(
 		lfshook.WriterMap{
 			logrus.InfoLevel:  infoWriter,
@@ -53,8 +58,8 @@ func init() {
 	))
 
 	// gin log配置
-	//gin.DefaultWriter = infoWriter
-	//gin.DefaultErrorWriter = errorWriter
+	gin.DefaultWriter = infoWriter
+	gin.DefaultErrorWriter = errorWriter
 }
 
 func getFormatter(isConsole bool) *formatter.Formatter {
@@ -70,6 +75,7 @@ func getFormatter(isConsole bool) *formatter.Formatter {
 			return fmt.Sprintf(" [%v:%v]", filepath.Base(fullPath), line)
 		},
 	}
+	fmtter.NoColors = true
 	if isConsole {
 		fmtter.NoColors = false
 	} else {
