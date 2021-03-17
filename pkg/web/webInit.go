@@ -26,12 +26,15 @@ func ServiceWithoutAuth(c *gin.Context) {
 }
 
 func InitWeb() {
-	router := gin.Default()
-	router.Use(ServiceWithAuth)
-	router.POST("/user/add", gerror.ErrorWrapper(api.AddUser))
-	err := router.Run(":8080")
-	if err != nil {
-		logger.Logger.Error("初始化web失败==>", err)
-		panic(err)
-	}
+	go func() {
+		router := gin.Default()
+		router.Use(ServiceWithAuth)
+		router.POST("/user/add", gerror.ErrorWrapper(api.AddUser))
+		err := router.Run(":8080")
+		if err != nil {
+			logger.Logger.Error("初始化web失败==>", err)
+			panic(err)
+		}
+	}()
+	logger.Logger.Info("初始化web 成功，监听端口 8080")
 }

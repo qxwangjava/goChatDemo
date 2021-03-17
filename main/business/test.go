@@ -1,25 +1,36 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
-	"time"
+	"net"
+	"os"
+	"strings"
 )
 
 func main() {
-	loc, _ := time.LoadLocation("Asia/Shanghai")
-	birthDay1, _ := time.ParseInLocation("2006-01-02 15:04:05", "1993-01-02 00:00:00", loc)
-	birthDay2, err := time.ParseInLocation("2006-01-02 15:04:05", "1993-01-02 00:00:00", time.Local)
-	brithday3, err := time.ParseInLocation("2006-01-02 15:04:12", "1993-01-02 00:00:00", time.Local)
-	fmt.Println(birthDay1)
+	conn, err := net.Dial("tcp", "127.0.0.1:20000")
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println("err :", err)
+		return
 	}
-	fmt.Println(birthDay2)
-	fmt.Println(brithday3)
-	//timeObj, err := time.ParseInLocation("2006/01/02 15:04:05", "2019/08/04 14:15:20", loc)
-	//if err != nil {
-	//	fmt.Println(err)
-	//	return
-	//}
-	//fmt.Println(timeObj)
+	inputReader := bufio.NewReader(os.Stdin)
+	for {
+		input, _ := inputReader.ReadString('\n') // 读取用户输入
+		inputInfo := strings.Trim(input, "\r\n")
+		if strings.ToUpper(inputInfo) == "Q" { // 如果输入q就退出
+			return
+		}
+		_, err = conn.Write([]byte(inputInfo)) // 发送数据
+		if err != nil {
+			return
+		}
+		buf := [512]byte{}
+		n, err := conn.Read(buf[:])
+		if err != nil {
+			fmt.Println("recv failed, err:", err)
+			return
+		}
+		fmt.Println(string(buf[:n]))
+	}
 }
