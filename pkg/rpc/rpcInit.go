@@ -13,7 +13,7 @@ var (
 )
 
 func InitUserServiceClient() {
-	conn, err := grpc.Dial(RpcAddr, grpc.WithInsecure())
+	conn, err := grpc.Dial(RpcAddr, grpc.WithInsecure(), grpc.WithUnaryInterceptor(interceptor))
 	if err != nil {
 		logger.Logger.Error(err)
 		panic(err)
