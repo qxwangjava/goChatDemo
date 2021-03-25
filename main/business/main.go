@@ -2,6 +2,7 @@ package main
 
 import (
 	"goChatDemo/config"
+	"goChatDemo/internal/manager"
 	"goChatDemo/internal/tcp_conn"
 	"goChatDemo/internal/ws_conn"
 	"goChatDemo/pkg/db"
@@ -20,9 +21,11 @@ func main() {
 
 	tcp_conn.InitTCPServer()
 
-	ws_conn.InitWSServer("")
+	ws_conn.InitWSServer()
 
 	web.InitWeb()
+
+	manager.InitConnMap()
 
 	select {}
 

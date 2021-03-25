@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/golang/protobuf/ptypes"
+	"github.com/pkg/errors"
 	"goChatDemo/internal/business/model"
 	"goChatDemo/pkg/db"
 	"goChatDemo/pkg/logger"
@@ -17,7 +18,7 @@ var UserService = userService{}
 func (u userService) AddUser(ctx context.Context, addUserDto *pb.AddUserDto) (*pb.UserId, error) {
 	birthday, _ := ptypes.Timestamp(addUserDto.Birthday)
 	requestBody, _ := json.Marshal(addUserDto)
-	logger.Logger.Info("收到请求：", string(requestBody))
+	logger.Logger.Info("AddUser 入参：", string(requestBody))
 	dbUser := model.User{
 		Birthday: &birthday,
 		Email:    addUserDto.Email,
@@ -28,7 +29,11 @@ func (u userService) AddUser(ctx context.Context, addUserDto *pb.AddUserDto) (*p
 		Mobile:   addUserDto.Mobile,
 		Sex:      int(addUserDto.Sex),
 	}
+	queryUser := db.DB.Where("mobile = ?", addUserDto.Mobile).First(&dbUser)
+	if queryUser != nil {
+		return nil, errors.New("手机号已注册")
 
+	}
 	db.DB.Save(&dbUser)
 	result := pb.UserId{
 		UserId: dbUser.Id,

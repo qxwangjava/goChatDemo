@@ -1,11 +1,12 @@
-package gerror
+package web
 
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"goChatDemo/pkg/gerror"
 	"goChatDemo/pkg/logger"
-	"goChatDemo/pkg/rpc"
 	"net/http"
+	"strings"
 )
 
 type WrapperHandle func(c *gin.Context) error
@@ -14,10 +15,9 @@ func ErrorWrapper(handle WrapperHandle) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		err := handle(c)
 		if err != nil {
-			//err = errors.Wrap(err, "")
-			logger.Logger.Error("Error occurred", fmt.Sprintf("%+v", err))
-			//logger.Logger.Error(err)
-			r := rpc.ErrorMsg(err.Error())
+			logger.Logger.Error("Error occurred:", fmt.Sprintf("%+v", err))
+			errMsg := strings.Split(err.Error(), "desc = ")[1]
+			r := gerror.ErrorMsg(errMsg)
 			c.JSON(http.StatusOK, r)
 		}
 	}

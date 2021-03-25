@@ -2,17 +2,17 @@ package web
 
 import (
 	"github.com/gin-gonic/gin"
+	"goChatDemo/config"
 	"goChatDemo/internal/business/api"
 	"goChatDemo/pkg/gerror"
 	"goChatDemo/pkg/logger"
-	"goChatDemo/pkg/rpc"
 	"net/http"
 )
 
 func ServiceWithAuth(c *gin.Context) {
 	token := c.GetHeader("token")
 	if token == "" {
-		r := rpc.ErrorMsg("需要认证")
+		r := gerror.ErrorMsg("需要认证")
 		c.JSON(http.StatusOK, r)
 		c.Abort()
 	} else {
@@ -28,13 +28,14 @@ func ServiceWithoutAuth(c *gin.Context) {
 func InitWeb() {
 	go func() {
 		router := gin.Default()
+		router.POST("/user/add", ErrorWrapper(api.AddUser))
+		// 该拦截器以后内容需要拦截器过滤
 		router.Use(ServiceWithAuth)
-		router.POST("/user/add", gerror.ErrorWrapper(api.AddUser))
-		err := router.Run(":8080")
+		err := router.Run(config.WebConfig.WebPort)
 		if err != nil {
 			logger.Logger.Error("初始化web失败==>", err)
 			panic(err)
 		}
 	}()
-	logger.Logger.Info("初始化web 成功，监听端口 8080")
+	logger.Logger.Info("初始化web成功，监听端口:", config.WebConfig.WebPort)
 }

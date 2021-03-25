@@ -38,7 +38,7 @@ func main() {
 
 	//u := url.URL{Scheme: "ws", Host: "127.0.0.1:8081", Path: "/echo"}
 	var requestHeader = http.Header{}
-	requestHeader["token"] = []string{"1|1|3"}
+	requestHeader["token"] = []string{"2|2|3"}
 	c, _, err := websocket.DefaultDialer.Dial("ws://127.0.0.1:8081/ws", requestHeader)
 	if err != nil {
 		logger.Logger.Error("连接失败:", err)
@@ -70,7 +70,6 @@ func main() {
 
 		}
 	}()
-	logger.Logger.Info("客户端启动成功")
 	select {}
 
 }

@@ -1,4 +1,4 @@
-package rpc
+package gerror
 
 const (
 	CODE_SUCCESS         string = "0"
@@ -42,7 +42,7 @@ func Success(data interface{}) Result {
 func ErrorMsg(msg string) Result {
 	return Result{
 		Success: false,
-		Code:    CODE_SUCCESS,
+		Code:    CODE_FAIL,
 		Message: msg,
 		Data:    nil,
 	}
