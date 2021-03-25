@@ -50,13 +50,14 @@ func wsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	userIdConn = append(userIdConn, connInfo)
 	manager.ConnManager[userId] = userIdConn
-
 	logger.Logger.Info("建立连接成功")
 	if err != nil {
 		logger.Logger.Error(err)
 		return
 	}
-	go handleConn(conn)
+	var connCnt = len(manager.ConnManager)
+	logger.Logger.Info("当前连接数量：", connCnt)
+	go handleConn(&connInfo, conn)
 
 }
 
@@ -73,7 +74,7 @@ func InitWSServer() {
 	logger.Logger.Info("webSocket启动成功,监听端口 8081")
 }
 
-func handleConn(conn *websocket.Conn) {
+func handleConn(connInfo *manager.ConnInfo, conn *websocket.Conn) {
 	//for {
 	//	mt, message, err := conn.ReadMessage()
 	//	if err != nil {
@@ -88,19 +89,15 @@ func handleConn(conn *websocket.Conn) {
 	//		break
 	//	}
 	//}
-
 	for {
 		mt, data, err := conn.ReadMessage()
 		handleResult := handlePackage(mt, data)
 		if err != nil {
-			//TODO 这里接收消息，触发心跳，如果心跳不通，则删除连接
-			logger.Logger.Error("server read error:", err)
-			//err = conn.PingHandler("ping")
-			logger.Logger.Info("server send: ", string(handleResult))
-			if err != nil {
-				logger.Logger.Error("server write error:", err)
-				break
-			}
+			logger.Logger.Error("服务端读取消息失败:", err)
+			//连接失败，认为设备离线
+			manager.ConnTypeMap[connInfo.DeviceType].Delete(connInfo.UserId)
+			delete(manager.ConnManager, connInfo.UserId)
+			gerror.HandleError(conn.Close())
 			break
 		}
 		err = conn.WriteMessage(mt, handleResult)
@@ -128,7 +125,8 @@ PongMessage = 10
 func handlePackage(messageType int, data []byte) []byte {
 	logger.Logger.Info("server recv: ", string(data))
 	result := []byte{}
-	if messageType == 1 { //处理文本类型的消息
+	switch messageType {
+	case websocket.TextMessage: //处理文本类型的消息
 		var imAction = service.ImAction{}
 		err := json.Unmarshal(data, &imAction)
 		gerror.HandleError(err)
@@ -138,6 +136,8 @@ func handlePackage(messageType int, data []byte) []byte {
 		default:
 			result, _ = json.Marshal(gerror.ErrorMsg("找不到action"))
 		}
+	case websocket.PingMessage: //处理PING的消息
+		logger.Logger.Info("收到ping消息")
 	}
 	return result
 }
