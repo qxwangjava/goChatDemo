@@ -32,7 +32,7 @@ type TextMessage struct {
 }
 
 //发送消息处理
-func SendMessage(connInfo *manager.ConnInfo, data []byte) []byte {
+func SendMessage(connInfo *manager.UserInfo, data []byte) []byte {
 	var result = []byte{}
 	var message = Message{}
 	err := json.Unmarshal(data, &message)
@@ -50,13 +50,13 @@ func SendMessage(connInfo *manager.ConnInfo, data []byte) []byte {
 
 }
 
-func sendImageMessage(connInfo *manager.ConnInfo, data []byte) []byte {
+func sendImageMessage(connInfo *manager.UserInfo, data []byte) []byte {
 	result, _ := json.Marshal(gerror.ErrorMsg("暂不支持图片消息"))
 	return result
 }
 
 //发送文本消息
-func sendTextMessage(connInfo *manager.ConnInfo, data []byte) []byte {
+func sendTextMessage(connInfo *manager.UserInfo, data []byte) []byte {
 	textMessage := TextMessage{}
 	err := json.Unmarshal(data, &textMessage)
 	gerror.HandleError(err)

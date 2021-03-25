@@ -7,10 +7,12 @@ import (
 	"sync"
 )
 
-type ConnInfo struct {
+type UserInfo struct {
+	Addr       string // 客户端地址
 	UserId     string
 	DeviceId   string
-	DeviceType int //1-android 2-ios 3-web
+	DeviceType int    //1-android 2-ios 3-web
+	LoginTime  uint64 // 登录时间 登录以后才有
 }
 
 var ConnTypeMap = map[int]*sync.Map{}
@@ -25,7 +27,7 @@ var IOSConn = sync.Map{}
 var WebConn = sync.Map{}
 
 // 用户连接信息容器
-var ConnManager = map[string][]ConnInfo{}
+var ConnManager = map[string][]UserInfo{}
 
 // 解析token,获取用户id和设备id,反参 userId,deviceId,deviceType
 func GetUserInfoFromToken(token string) (string, string, int) {
