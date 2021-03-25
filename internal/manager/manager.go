@@ -1,6 +1,7 @@
 package manager
 
 import (
+	"github.com/gorilla/websocket"
 	"strconv"
 	"strings"
 	"sync"
@@ -38,4 +39,21 @@ func InitConnMap() {
 	ConnTypeMap[1] = &AndroidConn
 	ConnTypeMap[2] = &IOSConn
 	ConnTypeMap[3] = &WebConn
+}
+
+func GetConnByUserId(userId string) []*websocket.Conn {
+	//获取用户连接信息
+	connInfoList := ConnManager[userId]
+	//构建结果对象
+	var result = make([]*websocket.Conn, 0)
+	//遍历连接信息，根据设备类型从不通的容器中获取连接
+	for i := range connInfoList {
+		ConnMap := ConnTypeMap[connInfoList[i].DeviceType]
+		value, ok := ConnMap.Load(userId)
+		if ok {
+			conn := value.(*websocket.Conn)
+			result = append(result, conn)
+		}
+	}
+	return result
 }

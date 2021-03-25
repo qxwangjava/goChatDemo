@@ -39,7 +39,7 @@ func main() {
 
 	//u := url.URL{Scheme: "ws", Host: "127.0.0.1:8081", Path: "/echo"}
 	var requestHeader = http.Header{}
-	token := []string{"1|1|3"}
+	token := []string{"3|3|3"}
 	requestHeader["token"] = token
 	conn, _, err := websocket.DefaultDialer.Dial("ws://127.0.0.1:8081/ws", requestHeader)
 	if err != nil {

@@ -91,13 +91,15 @@ func handleConn(connInfo *manager.ConnInfo, conn *websocket.Conn) {
 	//}
 	for {
 		mt, data, err := conn.ReadMessage()
-		handleResult := handlePackage(mt, data)
+		handleResult := handlePackage(connInfo, mt, data)
 		if err != nil {
 			logger.Logger.Error("服务端读取消息失败:", err)
 			//连接失败，认为设备离线
 			manager.ConnTypeMap[connInfo.DeviceType].Delete(connInfo.UserId)
 			delete(manager.ConnManager, connInfo.UserId)
 			gerror.HandleError(conn.Close())
+			var connCnt = len(manager.ConnManager)
+			logger.Logger.Info("当前连接数量：", connCnt)
 			break
 		}
 		err = conn.WriteMessage(mt, handleResult)
@@ -122,7 +124,7 @@ PingMessage = 9
 PongMessage = 10
 
 */
-func handlePackage(messageType int, data []byte) []byte {
+func handlePackage(connInfo *manager.ConnInfo, messageType int, data []byte) []byte {
 	logger.Logger.Info("server recv: ", string(data))
 	result := []byte{}
 	switch messageType {
@@ -132,7 +134,7 @@ func handlePackage(messageType int, data []byte) []byte {
 		gerror.HandleError(err)
 		switch imAction.Action {
 		case "sendMessage":
-			result = service.SendMessage(data)
+			result = service.SendMessage(connInfo, data)
 		default:
 			result, _ = json.Marshal(gerror.ErrorMsg("找不到action"))
 		}

@@ -15,7 +15,7 @@ import (
 var dbname = flag.String("db", "demo", "the database name")
 
 //表名 改第二个值
-var tblname = flag.String("tbl", "user", "the table name to export")
+var tblname = flag.String("tbl", "group_user", "the table name to export")
 
 //文件保存路径 改第二个值
 var savepath = flag.String("path", "./", "the path to save file")
