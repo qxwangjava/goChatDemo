@@ -1,12 +1,9 @@
-package websocket
+package ws_conn
 
 import (
-	"encoding/json"
 	"github.com/gorilla/websocket"
 	"goChatDemo/config"
-	"goChatDemo/internal/business/service"
 	"goChatDemo/internal/manager"
-	"goChatDemo/pkg/gerror"
 	"goChatDemo/pkg/logger"
 	"net/http"
 )
@@ -17,27 +14,6 @@ var upgrader = websocket.Upgrader{
 	CheckOrigin: func(r *http.Request) bool {
 		return true
 	},
-}
-
-func handleMessage(connInfo *manager.UserInfo, messageType int, data []byte) []byte {
-	logger.Logger.Info("server recv: ", string(data))
-	result := []byte{}
-	switch messageType {
-	case websocket.TextMessage: //处理文本类型的消息
-		var imAction = service.ImAction{}
-		err := json.Unmarshal(data, &imAction)
-		gerror.HandleError(err)
-		switch imAction.Action {
-		case "sendMessage":
-			//TODO 这里考虑分布式（1 grpc http2协议 2 mqtt）
-			result = service.SendMessage(connInfo, data)
-		default:
-			result, _ = json.Marshal(gerror.ErrorMsg("找不到action"))
-		}
-	case websocket.PingMessage: //处理PING的消息
-		logger.Logger.Info("收到ping消息")
-	}
-	return result
 }
 
 func InitWSServer() {

@@ -6,6 +6,7 @@ require (
 	github.com/antonfisher/nested-logrus-formatter v1.3.0
 	github.com/apache/dubbo-go v1.5.5 // indirect
 	github.com/apache/dubbo-go-hessian2 v1.9.1 // indirect
+	github.com/eclipse/paho.mqtt.golang v1.3.2 // indirect
 	github.com/gin-gonic/gin v1.6.3 // indirect
 	github.com/go-playground/validator/v10 v10.4.1 // indirect
 	github.com/go-redis/redis/v8 v8.7.1

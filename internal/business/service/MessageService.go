@@ -32,7 +32,7 @@ type TextMessage struct {
 }
 
 //发送消息处理
-func SendMessage(connInfo *manager.UserInfo, data []byte) []byte {
+func SendMessage(userId string, data []byte) []byte {
 	var result = []byte{}
 	var message = Message{}
 	err := json.Unmarshal(data, &message)
@@ -40,9 +40,9 @@ func SendMessage(connInfo *manager.UserInfo, data []byte) []byte {
 	messageType := message.MessageType
 	switch messageType {
 	case 1:
-		result = sendTextMessage(connInfo, data)
+		result = sendTextMessage(userId, data)
 	case 2:
-		result = sendImageMessage(connInfo, data)
+		result = sendImageMessage(userId, data)
 	default:
 		result, _ = json.Marshal(gerror.ErrorMsg("不支持的消息类型"))
 	}
@@ -50,17 +50,16 @@ func SendMessage(connInfo *manager.UserInfo, data []byte) []byte {
 
 }
 
-func sendImageMessage(connInfo *manager.UserInfo, data []byte) []byte {
+func sendImageMessage(userId string, data []byte) []byte {
 	result, _ := json.Marshal(gerror.ErrorMsg("暂不支持图片消息"))
 	return result
 }
 
 //发送文本消息
-func sendTextMessage(connInfo *manager.UserInfo, data []byte) []byte {
+func sendTextMessage(userId string, data []byte) []byte {
 	textMessage := TextMessage{}
 	err := json.Unmarshal(data, &textMessage)
 	gerror.HandleError(err)
-	userId := connInfo.UserId
 	if textMessage.OtherSideType == 1 { //对个人发消息
 		//判断好友关系、黑名单等
 		friendId := textMessage.OtherSideId
