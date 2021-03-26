@@ -1,4 +1,4 @@
-package ws_conn
+package websocket
 
 import (
 	"encoding/json"
@@ -19,60 +19,6 @@ var upgrader = websocket.Upgrader{
 	},
 }
 
-type Client struct {
-	UserInfo  *manager.UserInfo
-	Conn      *websocket.Conn
-	WriteChan chan []byte
-}
-
-func (c Client) Read() {
-	conn := c.Conn
-	for {
-		mt, data, err := conn.ReadMessage()
-		if err != nil {
-			logger.Logger.Error("服务端读取消息失败:", err)
-			//连接失败，认为设备离线
-			manager.ConnTypeMap[c.UserInfo.DeviceType].Delete(c.UserInfo.UserId)
-			delete(manager.ConnManager, c.UserInfo.UserId)
-			conn.Close()
-			close(c.WriteChan)
-			var connCnt = len(manager.ConnManager)
-			logger.Logger.Info("当前连接数量：", connCnt)
-			return
-		}
-		logger.Logger.Info("server recv: ", string(data))
-		//处理数据
-		handleResult := handleMessage(c.UserInfo, mt, data)
-		c.WriteChan <- handleResult
-	}
-}
-
-/**
-messageType 枚举
-TextMessage = 1
-
-BinaryMessage = 2
-
-CloseMessage = 8
-
-PingMessage = 9
-
-PongMessage = 10
-
-*/
-
-func (c Client) Write() {
-	for {
-		handleResult := <-c.WriteChan
-		err := c.Conn.WriteMessage(websocket.TextMessage, handleResult)
-		logger.Logger.Info("server send: ", string(handleResult))
-		if err != nil {
-			logger.Logger.Error("server write error:", err)
-			break
-		}
-	}
-}
-
 func handleMessage(connInfo *manager.UserInfo, messageType int, data []byte) []byte {
 	logger.Logger.Info("server recv: ", string(data))
 	result := []byte{}
@@ -83,6 +29,7 @@ func handleMessage(connInfo *manager.UserInfo, messageType int, data []byte) []b
 		gerror.HandleError(err)
 		switch imAction.Action {
 		case "sendMessage":
+			//TODO 这里考虑分布式（1 grpc http2协议 2 mqtt）
 			result = service.SendMessage(connInfo, data)
 		default:
 			result, _ = json.Marshal(gerror.ErrorMsg("找不到action"))

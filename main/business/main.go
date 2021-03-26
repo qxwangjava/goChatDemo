@@ -4,7 +4,7 @@ import (
 	"goChatDemo/config"
 	"goChatDemo/internal/manager"
 	"goChatDemo/internal/tcp_conn"
-	"goChatDemo/internal/ws_conn"
+	"goChatDemo/internal/websocket"
 	"goChatDemo/pkg/db"
 	"goChatDemo/pkg/rpc"
 	"goChatDemo/pkg/web"
@@ -21,7 +21,7 @@ func main() {
 
 	tcp_conn.InitTCPServer()
 
-	ws_conn.InitWSServer()
+	websocket.InitWSServer()
 
 	web.InitWeb()
 
