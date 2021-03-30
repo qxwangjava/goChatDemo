@@ -2,12 +2,11 @@ package ws_conn
 
 import (
 	"github.com/gorilla/websocket"
-	"goChatDemo/internal/manager"
 	"goChatDemo/pkg/logger"
 )
 
 type Client struct {
-	UserInfo  *manager.UserInfo
+	UserInfo  UserInfo
 	Conn      *websocket.Conn
 	WriteChan chan []byte
 }
@@ -19,17 +18,17 @@ func (c Client) Read() {
 		if err != nil {
 			logger.Logger.Error("服务端读取消息失败:", err)
 			//连接失败，认为设备离线
-			manager.ConnTypeMap[c.UserInfo.DeviceType].Delete(c.UserInfo.UserId)
-			delete(manager.ConnManager, c.UserInfo.UserId)
+			ConnTypeMap[c.UserInfo.DeviceType].Delete(c.UserInfo.UserId)
+			delete(ConnManager, c.UserInfo.UserId)
 			conn.Close()
 			close(c.WriteChan)
-			var connCnt = len(manager.ConnManager)
+			var connCnt = len(ConnManager)
 			logger.Logger.Info("当前连接数量：", connCnt)
 			return
 		}
 		logger.Logger.Info("server recv: ", string(data))
 		//处理数据
-		handleResult := handleMessage(c.UserInfo, mt, data)
+		handleResult := handleMessage(&c.UserInfo, mt, data)
 		c.WriteChan <- handleResult
 	}
 }

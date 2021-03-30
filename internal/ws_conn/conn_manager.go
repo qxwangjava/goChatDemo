@@ -1,4 +1,4 @@
-package manager
+package ws_conn
 
 import (
 	"context"
@@ -50,12 +50,10 @@ func CloseConn(deviceType int, userId string) gerror.Result {
 	var userConnManager = ConnTypeMap[deviceType]
 	value, ok := userConnManager.Load(userId)
 	if ok { //当前用户的在当前服务器上
+		oldConn := value.(Client)
+		oldConn.Conn.Close()
 		key := strconv.Itoa(deviceType) + "_" + userId
 		db.RedisClient.Del(context.Background(), key)
-		oldConn := value.(*websocket.Conn)
-	_:
-		oldConn.Close()
-
 	}
 	return gerror.SUCCESS
 }

@@ -7,7 +7,6 @@ import (
 	"goChatDemo/config"
 	"goChatDemo/internal/business/controller"
 	"goChatDemo/internal/business/rpc_client"
-	"goChatDemo/internal/manager"
 	"goChatDemo/pkg/db"
 	"goChatDemo/pkg/gerror"
 	"goChatDemo/pkg/logger"
@@ -25,7 +24,7 @@ var upgrader = websocket.Upgrader{
 	},
 }
 
-func handleMessage(connInfo *manager.UserInfo, messageType int, data []byte) []byte {
+func handleMessage(connInfo *UserInfo, messageType int, data []byte) []byte {
 	logger.Logger.Info("server recv: ", string(data))
 	result := []byte{}
 	switch messageType {
@@ -39,7 +38,7 @@ func handleMessage(connInfo *manager.UserInfo, messageType int, data []byte) []b
 			return result
 		}
 		//这里考虑分布式（1 grpc http2协议 ）
-		return messageHandler(connInfo, data)
+		return messageHandler(connInfo.UserId, data)
 
 	case websocket.PingMessage: //处理PING的消息
 		logger.Logger.Info("收到ping消息")
@@ -65,7 +64,7 @@ func wsHandler(w http.ResponseWriter, r *http.Request) {
 	var token = r.Header.Get("token")
 	logger.Logger.Info("客户端信息：token:", token)
 	//TODO 验证token的有效性获取userId和deviceId
-	var userId, deviceId, deviceType = manager.GetUserInfoFromToken(token)
+	var userId, deviceId, deviceType = GetUserInfoFromToken(token)
 	//建立连接
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
@@ -75,7 +74,7 @@ func wsHandler(w http.ResponseWriter, r *http.Request) {
 	key := strconv.Itoa(deviceType) + "_" + userId
 	serverIp := util.GetServerIp()
 	//断开原来的web连接
-	_ = manager.CloseConn(deviceType, userId)
+	_ = CloseConn(deviceType, userId)
 	//当前用户不在当前服务器上
 	oldIp := db.RedisClient.Get(context.Background(), key)
 	if oldIp != nil {
@@ -109,26 +108,26 @@ func wsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//保存长连接到本地
-	userInfo := manager.UserInfo{
+	userInfo := UserInfo{
 		Addr:       conn.RemoteAddr().String(),
 		UserId:     userId,
 		DeviceId:   deviceId,
 		DeviceType: deviceType,
 		LoginTime:  time.Now().Unix(),
 	}
-	userConnManager := manager.ConnTypeMap[deviceType]
-	var userIdConn = manager.ConnManager[userId]
+	userConnManager := ConnTypeMap[deviceType]
+	var userIdConn = ConnManager[userId]
 	if userIdConn == nil {
-		userIdConn = []manager.UserInfo{}
+		userIdConn = []UserInfo{}
 	}
 	userIdConn = append(userIdConn, userInfo)
-	manager.ConnManager[userId] = userIdConn
+	ConnManager[userId] = userIdConn
 	logger.Logger.Info("建立连接成功")
-	var connCnt = len(manager.ConnManager)
+	var connCnt = len(ConnManager)
 	logger.Logger.Info("当前连接数量：", connCnt)
 	client := Client{
 		Conn:      conn,
-		UserInfo:  &userInfo,
+		UserInfo:  userInfo,
 		WriteChan: make(chan []byte, 1000),
 	}
 	userConnManager.Store(userId, client)

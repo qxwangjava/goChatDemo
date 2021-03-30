@@ -2,7 +2,6 @@ package rpc_server
 
 import (
 	"context"
-	"goChatDemo/internal/manager"
 	"goChatDemo/internal/ws_conn"
 	"goChatDemo/pkg/pb"
 )
@@ -12,12 +11,12 @@ type imService struct{}
 var ImService = imService{}
 
 func (is imService) CloseConn(ctx context.Context, req *pb.CloseConnReq) (*pb.CloseConnRsp, error) {
-	manager.CloseConn(int(req.DeviceType), req.UserId)
+	ws_conn.CloseConn(int(req.DeviceType), req.UserId)
 	return &pb.CloseConnRsp{}, nil
 }
 
 func (is imService) SendMsg(ctx context.Context, req *pb.SendMsgReq) (*pb.SendMsgRsp, error) {
-	connMap := manager.ConnTypeMap[int(req.DeviceType)]
+	connMap := ws_conn.ConnTypeMap[int(req.DeviceType)]
 	value, ok := connMap.Load(req.GetUserId())
 	if ok {
 		//的判断消息类型

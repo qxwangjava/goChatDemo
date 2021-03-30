@@ -3,7 +3,6 @@ package main
 import (
 	"goChatDemo/config"
 	"goChatDemo/internal/business/rpc_server"
-	"goChatDemo/internal/manager"
 	"goChatDemo/internal/tcp_conn"
 	"goChatDemo/internal/ws_conn"
 	"goChatDemo/pkg/db"
@@ -23,7 +22,7 @@ func main() {
 
 	web.InitWeb()
 
-	manager.InitConnMap()
+	ws_conn.InitConnMap()
 
 	select {}
 

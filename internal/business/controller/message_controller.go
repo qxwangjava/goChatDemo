@@ -2,14 +2,13 @@ package controller
 
 import (
 	"goChatDemo/internal/business/service"
-	"goChatDemo/internal/manager"
 )
 
 const (
 	SEND_MESSGAE_ACTION = "sendMessage"
 )
 
-type MessageHandler func(connInfo *manager.UserInfo, data []byte) []byte
+type MessageHandler func(userId string, data []byte) []byte
 
 var MessageHandlerMap = make(map[string]MessageHandler, 1)
 
@@ -23,8 +22,7 @@ type ImAction struct {
 	Action string `json:"action"`
 }
 
-var SendMessage = func(connInfo *manager.UserInfo, data []byte) []byte {
-	userId := connInfo.UserId
+var SendMessage = func(userId string, data []byte) []byte {
 	var messageService = service.MessageService{}
 	return messageService.SendMessage(userId, data)
 }
