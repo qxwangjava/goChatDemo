@@ -49,14 +49,14 @@ func handleMessage(connInfo *UserInfo, messageType int, data []byte) []byte {
 func InitWSServer() {
 	go func() {
 		http.HandleFunc("/ws", wsHandler)
-		err := http.ListenAndServe(config.WebConfig.WebSocketAddr, nil)
+		err := http.ListenAndServe(config.WebConfig.WebSocketPort, nil)
 		if err != nil {
 			logger.Logger.Error("webSocket 启动失败:", err)
 			panic(err)
 		}
 
 	}()
-	logger.Logger.Info("webSocket启动成功,监听端口 8081")
+	logger.Logger.Info("webSocket启动成功,监听端口", config.WebConfig.WebSocketPort)
 }
 
 func wsHandler(w http.ResponseWriter, r *http.Request) {

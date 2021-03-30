@@ -34,8 +34,8 @@ func InitWeb() {
 		err := router.Run(config.WebConfig.WebPort)
 		if err != nil {
 			logger.Logger.Error("初始化web失败==>", err)
-			panic(err)
+			return
 		}
 	}()
-	logger.Logger.Info("初始化web成功，监听端口:", config.WebConfig.WebPort)
+	logger.Logger.Info("初始化web成功，监听端口", config.WebConfig.WebPort)
 }

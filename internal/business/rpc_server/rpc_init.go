@@ -24,7 +24,7 @@ var (
 
 func InitRpc() {
 	go func() {
-		listen, err := net.Listen("tcp", config.RpcConfig.RpcAddr+":"+config.RpcConfig.RpcPort)
+		listen, err := net.Listen("tcp", config.RpcConfig.RpcPort)
 		if err != nil {
 			logger.Logger.Error("grpc启动失败: ", err)
 			panic(err)
@@ -37,7 +37,7 @@ func InitRpc() {
 		pb.RegisterHelloServer(s, HelloService)
 		pb.RegisterUserServiceServer(s, UserService)
 		pb.RegisterImServerServer(s, ImService)
-		logger.Logger.Info("grpc启动成功，监听端口：" + config.RpcConfig.RpcPort)
+		logger.Logger.Info("grpc启动成功，监听端口" + config.RpcConfig.RpcPort)
 		err = s.Serve(listen)
 		if err != nil {
 			logger.Logger.Error("grpc启动失败: ", err)

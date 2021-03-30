@@ -13,14 +13,13 @@ type DBConfig struct {
 
 type WEBConfig struct {
 	WebPort       string
-	WebSocketAddr string
+	WebSocketPort string
 }
 
 type RPCConfig struct {
-	RpcAddr string
 	RpcPort string
 }
 
 func init() {
-	initDevConf()
+	initConfig()
 }
