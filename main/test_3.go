@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"github.com/gorilla/websocket"
 	"goChatDemo/pkg/logger"
+	"goChatDemo/pkg/util"
 	"net/http"
 	"os"
 	"strings"
@@ -41,7 +42,7 @@ func main() {
 	var requestHeader = http.Header{}
 	token := []string{"3|3|3"}
 	requestHeader["token"] = token
-	conn, _, err := websocket.DefaultDialer.Dial("ws://127.0.0.1:8081/ws", requestHeader)
+	conn, _, err := websocket.DefaultDialer.Dial("ws://"+util.GetServerIp()+":8081/ws", requestHeader)
 	if err != nil {
 		logger.Logger.Error("连接失败:", err)
 	}

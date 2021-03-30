@@ -1,4 +1,4 @@
-package service
+package rpc_server
 
 import (
 	"context"

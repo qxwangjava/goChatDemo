@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+package rpc;
+
+message closeConnReq {
+  int32 deviceType = 1;
+  string userId = 2;
+}
+
+message closeConnRsp{
+
+}
+
+message sendMsgReq {
+  string userId = 1; // 用户ID
+  int32 deviceType = 2; //设备类型
+  int32 messageType = 3; // type 消息类型，默认是 1 - text 2-image
+  string messageContent = 4; // 消息内容
+}
+
+message sendMsgRsp {
+
+}
+
+
+service ImServer {
+  // 关闭连接
+  rpc closeConn (closeConnReq) returns (closeConnRsp) {}
+
+  // 发送消息
+  rpc sendMsg (sendMsgReq) returns(sendMsgRsp){}
+
+}

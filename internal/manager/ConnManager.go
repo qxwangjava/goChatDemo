@@ -1,7 +1,10 @@
 package manager
 
 import (
+	"context"
 	"github.com/gorilla/websocket"
+	"goChatDemo/pkg/db"
+	"goChatDemo/pkg/gerror"
 	"strconv"
 	"strings"
 	"sync"
@@ -11,8 +14,8 @@ type UserInfo struct {
 	Addr       string // 客户端地址
 	UserId     string
 	DeviceId   string
-	DeviceType int    //1-android 2-ios 3-web
-	LoginTime  uint64 // 登录时间 登录以后才有
+	DeviceType int   //1-android 2-ios 3-web
+	LoginTime  int64 // 登录时间 登录以后才有
 }
 
 var ConnTypeMap = map[int]*sync.Map{}
@@ -41,6 +44,20 @@ func InitConnMap() {
 	ConnTypeMap[1] = &AndroidConn
 	ConnTypeMap[2] = &IOSConn
 	ConnTypeMap[3] = &WebConn
+}
+
+func CloseConn(deviceType int, userId string) gerror.Result {
+	var userConnManager = ConnTypeMap[deviceType]
+	value, ok := userConnManager.Load(userId)
+	if ok { //当前用户的在当前服务器上
+		key := strconv.Itoa(deviceType) + "_" + userId
+		db.RedisClient.Del(context.Background(), key)
+		oldConn := value.(*websocket.Conn)
+	_:
+		oldConn.Close()
+
+	}
+	return gerror.SUCCESS
 }
 
 func GetConnByUserId(userId string) []*websocket.Conn {

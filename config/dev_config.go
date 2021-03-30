@@ -1,5 +1,9 @@
 package config
 
+import (
+	"goChatDemo/pkg/util"
+)
+
 func initDevConf() {
 	DbConfig = DBConfig{
 		DbUrl:    "root:root@tcp(127.0.0.1:3306)/demo?parseTime=true",
@@ -8,11 +12,12 @@ func initDevConf() {
 
 	WebConfig = WEBConfig{
 		WebPort:       ":8080",
-		WebSocketAddr: "127.0.0.1:8081",
+		WebSocketAddr: util.GetServerIp() + ":8081",
 	}
 
 	RpcConfig = RPCConfig{
-		RpcAddr: "127.0.0.1:50052",
+		RpcAddr: util.GetServerIp(),
+		RpcPort: "50052",
 	}
 
 }

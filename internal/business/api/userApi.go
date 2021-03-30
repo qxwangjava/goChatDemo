@@ -5,8 +5,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/golang/protobuf/ptypes"
 	"github.com/pkg/errors"
+	"goChatDemo/internal/business/rpc_server"
 	"goChatDemo/pkg/pb"
-	"goChatDemo/pkg/rpc"
 	"net/http"
 	"time"
 )
@@ -87,7 +87,7 @@ var AddUser = func(c *gin.Context) error {
 		Ex:       au.Ex,
 		HeadImg:  au.HeadImg,
 	}
-	userId, err := rpc.UserServiceClient.AddUser(context.Background(), addUserDto)
+	userId, err := rpc_server.UserServiceClient.AddUser(context.Background(), addUserDto)
 	if err != nil {
 		return errors.Wrap(err, "")
 	}

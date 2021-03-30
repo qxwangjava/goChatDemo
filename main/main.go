@@ -2,11 +2,11 @@ package main
 
 import (
 	"goChatDemo/config"
+	"goChatDemo/internal/business/rpc_server"
 	"goChatDemo/internal/manager"
 	"goChatDemo/internal/tcp_conn"
-	"goChatDemo/internal/websocket"
+	"goChatDemo/internal/ws_conn"
 	"goChatDemo/pkg/db"
-	"goChatDemo/pkg/rpc"
 	"goChatDemo/pkg/web"
 )
 
@@ -15,13 +15,11 @@ func main() {
 
 	db.InitRedisClient(config.DbConfig.RedisUrl, "")
 
-	rpc.InitRpc()
-
-	rpc.InitUserServiceClient()
+	rpc_server.InitRpc()
 
 	tcp_conn.InitTCPServer()
 
-	websocket.InitWSServer()
+	ws_conn.InitWSServer()
 
 	web.InitWeb()
 

@@ -18,6 +18,7 @@ type WEBConfig struct {
 
 type RPCConfig struct {
 	RpcAddr string
+	RpcPort string
 }
 
 func init() {
