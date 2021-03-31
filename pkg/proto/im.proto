@@ -14,8 +14,9 @@ message closeConnRsp{
 message sendMsgReq {
   string userId = 1; // 用户ID
   int32 deviceType = 2; //设备类型
-  int32 messageType = 3; // type 消息类型，默认是 1 - text 2-image
-  string messageContent = 4; // 消息内容
+  string deviceId = 3;
+  int32 messageType = 4; // type 消息类型，默认是 1 - text 2-image
+  string messageContent = 5; // 消息内容
 }
 
 message sendMsgRsp {

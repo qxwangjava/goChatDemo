@@ -3,7 +3,7 @@ package db
 import (
 	"context"
 	"github.com/go-redis/redis/v8"
-	gorm_logrus "github.com/ttjio/gorm-logrus"
+	"github.com/ttjio/gorm-logrus"
 	"goChatDemo/pkg/logger"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"

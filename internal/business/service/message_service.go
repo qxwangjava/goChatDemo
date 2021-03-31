@@ -4,12 +4,14 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/go-redis/redis/v8"
-	"github.com/gorilla/websocket"
+	"github.com/pkg/errors"
 	"goChatDemo/internal/business/dao"
 	"goChatDemo/internal/business/rpc_client"
 	"goChatDemo/pkg/db"
 	"goChatDemo/pkg/gerror"
+	"goChatDemo/pkg/logger"
 	"strconv"
+	"strings"
 )
 
 type MessageService struct {
@@ -38,7 +40,9 @@ func (ms *MessageService) SendMessage(userId string, data []byte) []byte {
 	var result = []byte{}
 	var message = Message{}
 	err := json.Unmarshal(data, &message)
-	gerror.HandleError(err)
+	if err != nil {
+		logger.Logger.Error("解析消息失败：", errors.Wrap(err, ""))
+	}
 	messageType := message.MessageType
 	//找到需要发送的链接列表
 	if message.OtherSideType == 1 { //对个人发消息
@@ -50,24 +54,27 @@ func (ms *MessageService) SendMessage(userId string, data []byte) []byte {
 			return result
 		}
 		//找到Ip,grpc调用
-		deviceTypeList := db.RedisClient.LRange(context.Background(), userId, 0, -1).Val()
-		connList := []string{}
+		deviceInfoList := db.RedisClient.LRange(context.Background(), friendId, 0, -1).Val()
 		var connIp *redis.StringCmd
-		for i := range deviceTypeList {
-			key := deviceTypeList[i] + "_" + friendId
+		for i := range deviceInfoList {
+			deviceInfo := deviceInfoList[i]
+			deviceType := strings.Split(deviceInfo, "|")[0]
+			deviceId := strings.Split(deviceInfo, "|")[1]
+			key := deviceType + "_" + deviceId + "_" + friendId
 			connIp = db.RedisClient.Get(context.Background(), key)
 			if connIp != nil {
-				connList = append(connList, connIp.Val())
-			}
-			deviceType, _ := strconv.Atoi(deviceTypeList[i])
-			sendMsgResult := rpc_client.SendMsg(connIp.Val(), friendId, deviceType, message.MessageType, message.MessageContent)
-			if !sendMsgResult.Success {
-				//TODO消息发送失败的处理
+				deviceTypeStr, _ := strconv.Atoi(deviceType)
+				sendMsgResult := rpc_client.SendMsg(connIp.Val(), friendId, deviceTypeStr, deviceId, message.MessageType, message.MessageContent)
+				if !sendMsgResult.Success {
+					//TODO 消息发送失败的处理
+				}
+				result, _ := json.Marshal(gerror.SUCCESS)
+				return result
+			} else {
+				result, _ := json.Marshal(gerror.ErrorMsg("没有找到连接"))
+				return result
 			}
 		}
-
-		result, _ := json.Marshal(gerror.SUCCESS)
-		return result
 	}
 	if message.OtherSideType == 2 { //群发消息
 		groupId := message.OtherSideId
@@ -102,19 +109,5 @@ func (ms *MessageService) SendMessage(userId string, data []byte) []byte {
 //发送图片消息
 func sendImageMessage(fromUserId string, data []byte) []byte {
 	result, _ := json.Marshal(gerror.ErrorMsg("暂不支持图片消息"))
-	return result
-}
-
-//发送文本消息
-func sendTextMessage(data []byte, toConnList ...websocket.Conn) []byte {
-	textMessage := TextMessage{}
-	err := json.Unmarshal(data, &textMessage)
-	gerror.HandleError(err)
-	for i := range toConnList {
-		conn := toConnList[i]
-		_ = conn.WriteMessage(1, []byte(textMessage.Text))
-		//TODO 不在线时消息存储
-	}
-	result, _ := json.Marshal(gerror.ErrorMsg("找到对方类型"))
 	return result
 }

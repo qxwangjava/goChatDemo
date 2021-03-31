@@ -1,8 +1,11 @@
 package ws_conn
 
 import (
+	"context"
 	"github.com/gorilla/websocket"
+	"goChatDemo/pkg/db"
 	"goChatDemo/pkg/logger"
+	"strconv"
 )
 
 type Client struct {
@@ -17,13 +20,19 @@ func (c Client) Read() {
 		mt, data, err := conn.ReadMessage()
 		if err != nil {
 			logger.Logger.Error("服务端读取消息失败:", err)
-			//连接失败，认为设备离线
-			ConnTypeMap[c.UserInfo.DeviceType].Delete(c.UserInfo.UserId)
-			delete(ConnManager, c.UserInfo.UserId)
-			conn.Close()
-			close(c.WriteChan)
-			var connCnt = len(ConnManager)
-			logger.Logger.Info("当前连接数量：", connCnt)
+			key := strconv.Itoa(c.UserInfo.DeviceType) + "_" + c.UserInfo.DeviceId + "_" + c.UserInfo.UserId
+			LocalConnInfoManager.Delete(key)
+			db.RedisClient.Del(context.Background(), key)
+			db.RedisClient.LRem(context.Background(),
+				c.UserInfo.UserId,
+				1,
+				strconv.Itoa(c.UserInfo.DeviceType)+"|"+c.UserInfo.DeviceId)
+			logger.Logger.Info(
+				"用户id：",
+				c.UserInfo.UserId,
+				",设备类型：", c.UserInfo.DeviceType,
+				",设备Id：", c.UserInfo.DeviceId,
+				",客户端已掉线，当前连接数量：", getConnCnt())
 			return
 		}
 		logger.Logger.Info("server recv: ", string(data))
@@ -54,7 +63,8 @@ func (c Client) Write() {
 		logger.Logger.Info("server send: ", string(handleResult))
 		if err != nil {
 			logger.Logger.Error("server write error:", err)
-			break
+			return
+
 		}
 	}
 }

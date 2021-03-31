@@ -1,25 +1,25 @@
 package gerror
 
 const (
-	CODE_SUCCESS         string = "0"
-	CODE_SUCCESS_MESSAGE string = "success"
-	CODE_FAIL            string = "-1"
-	CODE_FAIL_MESSAGE    string = "服务器异常"
+	CodeSuccess        string = "0"
+	CodeSuccessMessage string = "success"
+	CodeFail           string = "-1"
+	CodeFailMessage    string = "服务器异常"
 )
 
 //成功结果
 var SUCCESS = Result{
 	Success: true,
-	Code:    CODE_SUCCESS,
-	Message: CODE_SUCCESS_MESSAGE,
+	Code:    CodeSuccess,
+	Message: CodeSuccessMessage,
 	Data:    nil,
 }
 
 //失败结果
 var ERROR = Result{
 	Success: true,
-	Code:    CODE_FAIL,
-	Message: CODE_FAIL_MESSAGE,
+	Code:    CodeFail,
+	Message: CodeFailMessage,
 	Data:    nil,
 }
 
@@ -33,8 +33,8 @@ type Result struct {
 func Success(data interface{}) Result {
 	return Result{
 		Success: true,
-		Code:    CODE_SUCCESS,
-		Message: CODE_SUCCESS_MESSAGE,
+		Code:    CodeSuccess,
+		Message: CodeSuccessMessage,
 		Data:    data,
 	}
 }
@@ -42,7 +42,7 @@ func Success(data interface{}) Result {
 func ErrorMsg(msg string) Result {
 	return Result{
 		Success: false,
-		Code:    CODE_FAIL,
+		Code:    CodeFail,
 		Message: msg,
 		Data:    nil,
 	}

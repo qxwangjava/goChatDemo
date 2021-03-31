@@ -18,7 +18,7 @@ func WrapError(err error) gerror.Result {
 			Success: false,
 			Message: err.Error(),
 			Data:    nil,
-			Code:    gerror.CODE_FAIL,
+			Code:    gerror.CodeFail,
 		}
 		return r
 	}
@@ -32,7 +32,7 @@ func WrapRPCError(err error) gerror.Result {
 			Success: false,
 			Message: err.Error(),
 			Data:    nil,
-			Code:    gerror.CODE_FAIL,
+			Code:    gerror.CodeFail,
 		}
 		return r
 	}

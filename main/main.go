@@ -4,9 +4,9 @@ import (
 	"goChatDemo/config"
 	"goChatDemo/internal/business/rpc_server"
 	"goChatDemo/internal/tcp_conn"
+	"goChatDemo/internal/web"
 	"goChatDemo/internal/ws_conn"
 	"goChatDemo/pkg/db"
-	"goChatDemo/pkg/web"
 )
 
 func main() {

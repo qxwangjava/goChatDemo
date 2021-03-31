@@ -1,6 +1,6 @@
 ### protoc编译命令
 
-`protoc  --go_out=plugins=grpc:../pb/ ./hello.proto
+`protoc  --go_out=plugins=grpc:./pkg/pb/ ./pkg/proto/im.prot
 `
 
 ### 发送文本消息

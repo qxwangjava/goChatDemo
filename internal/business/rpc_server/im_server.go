@@ -4,6 +4,7 @@ import (
 	"context"
 	"goChatDemo/internal/ws_conn"
 	"goChatDemo/pkg/pb"
+	"strconv"
 )
 
 type imService struct{}
@@ -16,8 +17,8 @@ func (is imService) CloseConn(ctx context.Context, req *pb.CloseConnReq) (*pb.Cl
 }
 
 func (is imService) SendMsg(ctx context.Context, req *pb.SendMsgReq) (*pb.SendMsgRsp, error) {
-	connMap := ws_conn.ConnTypeMap[int(req.DeviceType)]
-	value, ok := connMap.Load(req.GetUserId())
+	key := strconv.Itoa(int(req.DeviceType)) + "_" + req.DeviceId + "_" + req.UserId
+	value, ok := ws_conn.LocalConnInfoManager.Load(key)
 	if ok {
 		//的判断消息类型
 		if req.MessageType == 1 { //文本

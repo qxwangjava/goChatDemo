@@ -1,4 +1,4 @@
-package api
+package web_controller
 
 import (
 	"context"

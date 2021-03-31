@@ -12,10 +12,10 @@ import (
 )
 
 func getRpcAddr(ip string) string {
-	return ip + ":" + config.RpcConfig.RpcPort
+	return ip + config.RpcConfig.RpcPort
 }
 
-func SendMsg(ip string, toUserId string, deviceType int, messageType int, message string) gerror.Result {
+func SendMsg(ip string, toUserId string, deviceType int, deviceId string, messageType int, message string) gerror.Result {
 	rpcConn, err := grpc.Dial(getRpcAddr(ip), grpc.WithInsecure(), grpc.WithUnaryInterceptor(intercepter.Interceptor))
 	if err != nil {
 		logger.Logger.Error("连接rpc失败，消息发送失败:", err)
@@ -25,6 +25,7 @@ func SendMsg(ip string, toUserId string, deviceType int, messageType int, messag
 	in := pb.SendMsgReq{
 		UserId:         toUserId,
 		DeviceType:     int32(deviceType),
+		DeviceId:       deviceId,
 		MessageType:    int32(messageType),
 		MessageContent: message,
 	}
@@ -40,13 +41,17 @@ func CloseConn(ip string, userId string, deviceType int) gerror.Result {
 	conn, err := grpc.Dial(getRpcAddr(ip), grpc.WithInsecure(), grpc.WithUnaryInterceptor(intercepter.Interceptor))
 	if err != nil {
 		logger.Logger.Error(err)
-		panic(err)
+		return gerror.ErrorMsg("rpc建立连接失败:")
 	}
 	imRpcClient := pb.NewImServerClient(conn)
 	in := &pb.CloseConnReq{
 		DeviceType: int32(deviceType),
 		UserId:     userId,
 	}
-	_, _ = imRpcClient.CloseConn(context.Background(), in)
+	_, err = imRpcClient.CloseConn(context.Background(), in)
+	if err != nil {
+		logger.Logger.Error(err)
+		return gerror.ErrorMsg("rpc调用失败：")
+	}
 	return gerror.SUCCESS
 }

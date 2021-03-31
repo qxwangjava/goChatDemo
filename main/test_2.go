@@ -11,8 +11,8 @@ import (
 )
 
 func main() {
-	var serverIp = "192.168.122.129:8081"
-
+	//var serverIp = "192.168.122.129:8081"
+	var serverIp = "192.168.249.27:8081"
 	var requestHeader = http.Header{}
 	token := []string{"2|2|3"}
 	requestHeader["token"] = token

@@ -3,7 +3,7 @@ package web
 import (
 	"github.com/gin-gonic/gin"
 	"goChatDemo/config"
-	"goChatDemo/internal/business/api"
+	"goChatDemo/internal/business/web_controller"
 	"goChatDemo/pkg/gerror"
 	"goChatDemo/pkg/logger"
 	"net/http"
@@ -28,7 +28,7 @@ func ServiceWithoutAuth(c *gin.Context) {
 func InitWeb() {
 	go func() {
 		router := gin.Default()
-		router.POST("/user/add", ErrorWrapper(api.AddUser))
+		router.POST("/user/add", ErrorWrapper(web_controller.AddUser))
 		// 该拦截器以后内容需要拦截器过滤
 		router.Use(ServiceWithAuth)
 		err := router.Run(config.WebConfig.WebPort)

@@ -4,9 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/gorilla/websocket"
+	"github.com/pkg/errors"
 	"goChatDemo/config"
-	"goChatDemo/internal/business/controller"
-	"goChatDemo/internal/business/rpc_client"
+	"goChatDemo/internal/business/ws_action"
 	"goChatDemo/pkg/db"
 	"goChatDemo/pkg/gerror"
 	"goChatDemo/pkg/logger"
@@ -29,10 +29,14 @@ func handleMessage(connInfo *UserInfo, messageType int, data []byte) []byte {
 	result := []byte{}
 	switch messageType {
 	case websocket.TextMessage: //处理文本类型的消息
-		var imAction = controller.ImAction{}
+		var imAction = ws_action.ImAction{}
 		err := json.Unmarshal(data, &imAction)
-		gerror.HandleError(err)
-		messageHandler := controller.MessageHandlerMap[imAction.Action]
+		if err != nil {
+			logger.Logger.Error("解析请求内容失败：", errors.Wrap(err, ""))
+			result, _ = json.Marshal(gerror.ErrorMsg("解析请求内容失败，请检查请求内容"))
+			return result
+		}
+		messageHandler := ws_action.WsActionMap[imAction.Action]
 		if messageHandler == nil {
 			result, _ = json.Marshal(gerror.ErrorMsg("找不到action"))
 			return result
@@ -71,66 +75,55 @@ func wsHandler(w http.ResponseWriter, r *http.Request) {
 		logger.Logger.Error(err)
 		return
 	}
-	key := strconv.Itoa(deviceType) + "_" + userId
-	serverIp := util.GetServerIp()
-	//断开原来的web连接
-	_ = CloseConn(deviceType, userId)
-	//当前用户不在当前服务器上
-	oldIp := db.RedisClient.Get(context.Background(), key)
-	if oldIp != nil {
-		// grpc 下线 func CloseConn(key string)
-		rpc_client.CloseConn(oldIp.Val(), userId, deviceType)
-	}
+	//断开原来同类型设备的连接
+	ws_action.WsActionMap[ws_action.CloseConnAction](userId, []byte{}, deviceType)
+
 	//TODO 读取多端登录配置,根据配置选择断开哪些连接
 
-	//redis 存储用户ip映射
+	//redis存储Ip映射
+	key := strconv.Itoa(deviceType) + "_" + deviceId + "_" + userId
+	serverIp := util.GetServerIp()
 	db.RedisClient.Set(context.Background(), key, serverIp, 0)
-
 	//redis 存储用户在线状态
 	deviceTypeOnLineCnt := db.RedisClient.LLen(context.Background(), userId).Val()
+	deviceInfo := strconv.Itoa(deviceType) + "|" + deviceId
 	if deviceTypeOnLineCnt != 0 {
-		deviceTypeList := db.RedisClient.LRange(context.Background(), userId, 0, -1).Val()
+		deviceInfoList := db.RedisClient.LRange(context.Background(), userId, 0, -1).Val()
 		status := false
-		for i := range deviceTypeList {
-			if deviceTypeList[i] == strconv.Itoa(deviceType) {
+		for i := range deviceInfoList {
+			if deviceInfoList[i] == deviceInfo {
 				status = true
 				break
 			}
 		}
 		if !status {
-			deviceTypeList = append(deviceTypeList, strconv.Itoa(deviceType))
-			db.RedisClient.LPush(context.Background(), userId, deviceType)
+			deviceInfoList = append(deviceInfoList, deviceInfo)
+			db.RedisClient.LPush(context.Background(), userId, deviceInfo)
 		}
 	} else {
-		deviceTypeList := []int{}
-		deviceTypeList = append(deviceTypeList, deviceType)
-		db.RedisClient.LPush(context.Background(), userId, deviceType)
+		var deviceInfoList []string
+		deviceInfoList = append(deviceInfoList, deviceInfo)
+		db.RedisClient.LPush(context.Background(), userId, deviceInfo)
 	}
 
-	//保存长连接到本地
-	userInfo := UserInfo{
+	//保存用户信息到服务器本地
+	newUserInfo := UserInfo{
 		Addr:       conn.RemoteAddr().String(),
 		UserId:     userId,
 		DeviceId:   deviceId,
 		DeviceType: deviceType,
 		LoginTime:  time.Now().Unix(),
 	}
-	userConnManager := ConnTypeMap[deviceType]
-	var userIdConn = ConnManager[userId]
-	if userIdConn == nil {
-		userIdConn = []UserInfo{}
-	}
-	userIdConn = append(userIdConn, userInfo)
-	ConnManager[userId] = userIdConn
-	logger.Logger.Info("建立连接成功")
-	var connCnt = len(ConnManager)
-	logger.Logger.Info("当前连接数量：", connCnt)
 	client := Client{
 		Conn:      conn,
-		UserInfo:  userInfo,
+		UserInfo:  newUserInfo,
 		WriteChan: make(chan []byte, 1000),
 	}
-	userConnManager.Store(userId, client)
+	LocalConnInfoManager.Store(key, client)
+	logger.Logger.Info("建立连接成功")
+	var connCnt = getConnCnt()
+	logger.Logger.Info("当前连接数量：", connCnt)
+
 	go client.Read()
 	go client.Write()
 }
