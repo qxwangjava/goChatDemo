@@ -11,11 +11,14 @@ import (
 )
 
 func main() {
+
+}
+func startImClient() {
 	//var serverIp = "192.168.122.129:8081"
 	var serverIp = "192.168.249.27:8081"
 
 	var requestHeader = http.Header{}
-	token := []string{"1|1|3"}
+	token := []string{"1|web1|3"}
 	requestHeader["token"] = token
 	conn, _, err := websocket.DefaultDialer.Dial("ws://"+serverIp+"/ws", requestHeader)
 	if err != nil {
@@ -78,5 +81,4 @@ func main() {
 			conn.Close()
 		}
 	}
-
 }

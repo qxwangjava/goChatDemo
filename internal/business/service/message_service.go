@@ -45,6 +45,8 @@ func (ms *MessageService) SendMessage(userId string, data []byte) []byte {
 	}
 	messageType := message.MessageType
 	//找到需要发送的链接列表
+	var successKeyList []string
+	var failKeyList []string
 	if message.OtherSideType == 1 { //对个人发消息
 		//判断好友关系、黑名单等
 		friendId := message.OtherSideId
@@ -66,15 +68,18 @@ func (ms *MessageService) SendMessage(userId string, data []byte) []byte {
 				deviceTypeStr, _ := strconv.Atoi(deviceType)
 				sendMsgResult := rpc_client.SendMsg(connIp.Val(), friendId, deviceTypeStr, deviceId, message.MessageType, message.MessageContent)
 				if !sendMsgResult.Success {
+					failKeyList = append(failKeyList, key)
 					//TODO 消息发送失败的处理
+				} else {
+					successKeyList = append(successKeyList, key)
 				}
-				result, _ := json.Marshal(gerror.SUCCESS)
-				return result
 			} else {
-				result, _ := json.Marshal(gerror.ErrorMsg("没有找到连接"))
-				return result
+				//TODO 消息发送失败的处理
+				failKeyList = append(failKeyList, key)
 			}
 		}
+		result, _ := json.Marshal(gerror.SUCCESS)
+		return result
 	}
 	if message.OtherSideType == 2 { //群发消息
 		groupId := message.OtherSideId
@@ -86,9 +91,33 @@ func (ms *MessageService) SendMessage(userId string, data []byte) []byte {
 		}
 		//获取根据群id获取群用户
 		groupUsers := dao.GroupUserDao.GetGroupUsers(groupId)
-		userList := []string{}
+		var successKeyList []string
+		var failKeyList []string
 		for i := range groupUsers {
-			userList = append(userList, strconv.FormatInt(groupUsers[i].Id, 10))
+			groupUser := groupUsers[i]
+			groupUserId := strconv.FormatInt(groupUser.UserId, 10)
+			//找到Ip,grpc调用
+			deviceInfoList := db.RedisClient.LRange(context.Background(), groupUserId, 0, -1).Val()
+			var connIp *redis.StringCmd
+			for i := range deviceInfoList {
+				deviceInfo := deviceInfoList[i]
+				deviceType := strings.Split(deviceInfo, "|")[0]
+				deviceId := strings.Split(deviceInfo, "|")[1]
+				key := deviceType + "_" + deviceId + "_" + groupUserId
+				connIp = db.RedisClient.Get(context.Background(), key)
+				if connIp != nil {
+					deviceTypeStr, _ := strconv.Atoi(deviceType)
+					sendMsgResult := rpc_client.SendMsg(connIp.Val(), groupUserId, deviceTypeStr, deviceId, message.MessageType, message.MessageContent)
+					if !sendMsgResult.Success {
+						failKeyList = append(failKeyList, key)
+						//TODO 消息发送失败的处理
+					} else {
+						successKeyList = append(successKeyList, key)
+					}
+				} else {
+					failKeyList = append(failKeyList, key)
+				}
+			}
 		}
 
 		result, _ := json.Marshal(gerror.SUCCESS)

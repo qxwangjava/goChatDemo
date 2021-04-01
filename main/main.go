@@ -7,6 +7,8 @@ import (
 	"goChatDemo/internal/web"
 	"goChatDemo/internal/ws_conn"
 	"goChatDemo/pkg/db"
+	"goChatDemo/pkg/logger"
+	"goChatDemo/pkg/util"
 )
 
 func main() {
@@ -23,6 +25,8 @@ func main() {
 	web.InitWeb()
 
 	ws_conn.InitConnMap()
+
+	logger.Logger.Info("本机Ip:", util.GetServerIp())
 
 	select {}
 
