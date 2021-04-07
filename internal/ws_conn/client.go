@@ -3,9 +3,12 @@ package ws_conn
 import (
 	"context"
 	"github.com/gorilla/websocket"
+	"goChatDemo/internal/business/dao"
+	"goChatDemo/internal/business/model"
 	"goChatDemo/pkg/db"
 	"goChatDemo/pkg/logger"
 	"strconv"
+	"time"
 )
 
 type Client struct {
@@ -58,11 +61,19 @@ PongMessage = 10
 
 func (c Client) Write() {
 	for {
-		handleResult := <-c.WriteChan
-		err := c.Conn.WriteMessage(websocket.TextMessage, handleResult)
-		logger.Logger.Info("server send: ", string(handleResult))
+		sendMessage := <-c.WriteChan
+		err := c.Conn.WriteMessage(websocket.TextMessage, sendMessage)
+		logger.Logger.Info("server send: ", string(sendMessage))
 		if err != nil {
-			logger.Logger.Error("server write error:", err)
+			logger.Logger.Error("server write error:", sendMessage)
+			// 推送失败的 client内容和message,入库
+			push := model.ErrorPush{
+				CreateTime:  time.Now(),
+				PushContent: string(sendMessage),
+				UserId:      c.UserInfo.UserId,
+				IsHandle:    0,
+			}
+			dao.ErrorPushDao.AddErrorPush(push)
 			return
 
 		}

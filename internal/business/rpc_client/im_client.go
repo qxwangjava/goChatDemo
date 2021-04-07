@@ -15,7 +15,12 @@ func getRpcAddr(ip string) string {
 	return ip + config.RpcConfig.RpcPort
 }
 
-func SendMsg(ip string, toUserId string, deviceType int, deviceId string, messageType int, message string) gerror.Result {
+func SendMsg(
+	ip string,
+	toUserId string,
+	deviceType int,
+	deviceId string,
+	messageType int, message string, messageServerId int64, fromId string, fromType int, groupId int) gerror.Result {
 	rpcConn, err := grpc.Dial(getRpcAddr(ip), grpc.WithInsecure(), grpc.WithUnaryInterceptor(intercepter.Interceptor))
 	if err != nil {
 		logger.Logger.Error("连接rpc失败，消息发送失败:", err)
@@ -23,11 +28,15 @@ func SendMsg(ip string, toUserId string, deviceType int, deviceId string, messag
 	}
 	imServerClient := pb.NewImServerClient(rpcConn)
 	in := pb.SendMsgReq{
-		UserId:         toUserId,
-		DeviceType:     int32(deviceType),
-		DeviceId:       deviceId,
-		MessageType:    int32(messageType),
-		MessageContent: message,
+		ToUserId:        toUserId,
+		DeviceType:      int32(deviceType),
+		DeviceId:        deviceId,
+		MessageType:     int32(messageType),
+		MessageContent:  message,
+		MessageServerId: messageServerId,
+		FromId:          fromId,
+		FromType:        int32(fromType),
+		GroupId:         int64(groupId),
 	}
 	_, err = imServerClient.SendMsg(context.Background(), &in)
 	if err != nil {

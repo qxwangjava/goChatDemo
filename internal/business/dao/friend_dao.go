@@ -10,7 +10,7 @@ type friendDao struct {
 
 var FriendDao = new(friendDao)
 
-func (fd friendDao) GetFriend(userId string, friendId string) model.Friend {
+func (fd friendDao) GetFriend(userId, friendId string) model.Friend {
 	var friend model.Friend
 	db.DB.Where("user_id = ? and friend_id = ?", userId, friendId).Find(&friend)
 	return friend

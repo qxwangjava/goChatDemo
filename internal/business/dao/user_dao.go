@@ -17,7 +17,7 @@ func (ud userDao) Add(user *model.User) (int64, error) {
 	err := db.DB.Create(user).Error
 	if err != nil {
 		logger.Logger.Error(err)
-		panic(err)
+		return 0, err
 	}
 	return user.Id, nil
 }
@@ -30,7 +30,6 @@ func (ud userDao) Del(userId int64) {
 	err := db.DB.Delete(&user).Error
 	if err != nil {
 		logger.Logger.Error(err)
-		panic(err)
 	}
 }
 
@@ -52,7 +51,6 @@ func (ud userDao) DelByCondition(user *model.User) {
 	err := db.DB.Where(whereCondition).Delete(&user).Error
 	if err != nil {
 		logger.Logger.Error(err)
-		panic(err)
 	}
 }
 

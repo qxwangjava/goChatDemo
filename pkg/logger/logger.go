@@ -20,8 +20,8 @@ type ErrHook struct {
 }
 
 const (
-	infoFileName  = "/data/log/goChatDemo/im_info.log"
-	errorFileName = "/data/log/goChatDemo/im_error.log"
+	InfoFileName  = "/data/log/goChatDemo/im_info.log"
+	ErrorFileName = "/data/log/goChatDemo/im_error.log"
 )
 
 // Levels 只定义 error 和 panic 等级的日志,其他日志等级不会触发 hook
@@ -46,8 +46,8 @@ func init() {
 	Logger.SetFormatter(consoleFmt)
 	Logger.SetReportCaller(true)
 	Logger.SetLevel(logrus.DebugLevel)
-	infoWriter := getWriter(infoFileName)
-	errorWriter := getWriter(errorFileName)
+	infoWriter := getWriter(InfoFileName)
+	errorWriter := getWriter(ErrorFileName)
 	Logger.AddHook(lfshook.NewHook(
 		lfshook.WriterMap{
 			logrus.InfoLevel:  infoWriter,

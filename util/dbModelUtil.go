@@ -12,10 +12,10 @@ import (
 )
 
 //数据库名 改第二个值
-var dbname = flag.String("db", "demo", "the database name")
+var dbname = flag.String("db", "im_center", "the database name")
 
 //表名 改第二个值
-var tblname = flag.String("tbl", "group_user", "the table name to export")
+var tblname = flag.String("tbl", "friend_apply", "the table name to export")
 
 //文件保存路径 改第二个值
 var savepath = flag.String("path", "./", "the path to save file")
@@ -46,7 +46,7 @@ func main() {
 
 	if len(fs) > 0 {
 		var buffer bytes.Buffer
-		buffer.WriteString("package models\n\n")
+		buffer.WriteString("package model\n\n")
 
 		buffer.WriteString("import (\n\t\"time\"\n)\n\n")
 

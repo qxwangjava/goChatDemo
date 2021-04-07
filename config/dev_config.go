@@ -1,10 +1,10 @@
 package config
 
 import (
-	"fmt"
 	"github.com/nacos-group/nacos-sdk-go/clients"
 	"github.com/nacos-group/nacos-sdk-go/common/constant"
 	"github.com/nacos-group/nacos-sdk-go/vo"
+	"github.com/pkg/errors"
 	"github.com/spf13/viper"
 	"goChatDemo/pkg/logger"
 	"strings"
@@ -38,31 +38,37 @@ func initConfig() {
 			ClientConfig: &constant.ClientConfig{
 				TimeoutMs:   5000,
 				NamespaceId: "go",
+				LogLevel:    "INFO",
+				//LogDir: logger.InfoFileName,
+
 			},
 			ServerConfigs: serverConfigs,
 		},
 	)
 	if err != nil {
-		logger.Logger.Error("nacos初始化错误:", err)
+		logger.Logger.Error("nacos初始化错误:", errors.Wrap(err, ""))
+		return
 	}
 
 	content, err := nacosClient.GetConfig(vo.ConfigParam{DataId: nacosDataId, Group: nacosGroup})
 	if err != nil {
-		logger.Logger.Error("nacos读取配置错误:" + content)
+		logger.Logger.Error("nacos读取配置错误:", err)
+		return
 	}
 
 	err = defaultConfig.ReadConfig(strings.NewReader(content))
 	if err != nil {
 		logger.Logger.Error("Viper解析配置失败:", err)
+		return
 	}
 
 	go func() {
-		time.Sleep(time.Second * 10)
+		time.Sleep(time.Second * 5)
 		err = nacosClient.ListenConfig(vo.ConfigParam{
 			DataId: nacosDataId,
 			Group:  nacosGroup,
 			OnChange: func(namespace, group, dataId, data string) {
-				fmt.Println("config changed group:" + group + ", dataId:" + dataId + ", content:" + data)
+				logger.Logger.Info("config changed group:" + group + ", dataId:" + dataId + ", content:" + data)
 				err = defaultConfig.ReadConfig(strings.NewReader(data))
 				if err != nil {
 					logger.Logger.Error("Viper解析配置失败:", err)
